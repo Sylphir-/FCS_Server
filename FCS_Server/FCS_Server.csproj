@@ -52,6 +52,7 @@
     <Compile Include="Server.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="refs\Constants.cs" />
+    <Compile Include="util\PacketException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -54,32 +54,29 @@ namespace FCS_Server
                                 while (stream.DataAvailable)
                                 {
                                     // Creates a Buffer for data packets
-                                    Byte[] bytesBuffer = new byte[PacketStructure.PACKET_HEADER_STRUCTURE_LENGTH];
+                                    Byte[] bytesBuffer = new byte[PacketStructure.HEADER_LENGTH];
                                     int bytesRead = 0;
 
-                                    // Reads 1024 bytes of data
+                                    // Reads the HEADER_LENGTH bytes of data
                                     bytesRead = stream.Read( bytesBuffer , 0 , bytesBuffer.Length );
                                         
                                     if(bytesBuffer[0] == PacketType.HEADER)
                                     {
-                                        // Cria 4 bytes para converter em int
-                                        Byte[] pktLength = new byte[PacketStructure.PACKET_HEADER_PACKET_LENGTH];
-
-                                        // Popula os bytes
-                                        pktLength[0] = bytesBuffer[1];
-                                        pktLength[1] = bytesBuffer[2];
-                                        pktLength[2] = bytesBuffer[3];
-                                        pktLength[3] = bytesBuffer[4];
-
-                                        if (BitConverter.IsLittleEndian)
-                                            Array.Reverse( pktLength );
-
                                         // Converte os 4 bytes do Packet Length para ler o resto dos dados
-                                        Int16 packetLength = BitConverter.ToInt16( pktLength , 0 );
+                                        int packetLength = BitConverter.ToInt32( bytesBuffer , PacketStructure.PACKET_LENGTH_OFFSET );
+
+                                        // Cria packet final
+                                        Byte[] packet = new byte[bytesBuffer.Length + packetLength];
+
+                                        // Copia o buffer pro packet
+                                        Buffer.BlockCopy( bytesBuffer , 0 , packet , 0 , bytesBuffer.Length );
 
                                         // Le o resto do packet
-                                        Byte[] packet = new byte[packetLength];
-                                        bytesRead += stream.Read( packet , 0 , packetLength );
+                                        bytesBuffer = new byte[packetLength];
+                                        bytesRead += stream.Read( bytesBuffer , 0 , packetLength );
+
+                                        // Copia pro packet
+                                        Buffer.BlockCopy( bytesBuffer , 0 , packet , 0 , bytesBuffer.Length );
 
                                         // Processa o packet
                                         new Thread( () =>
@@ -94,9 +91,6 @@ namespace FCS_Server
                             {
                                 Console.WriteLine( Constants.SERVER_STREAM_UNREADABLE );
                             }
-                        } else
-                        {
-                            //Console.WriteLine( Constants.SERVER_CONN_WAITING );
                         }
                     }
                 } catch (Exception e)

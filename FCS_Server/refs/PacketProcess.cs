@@ -33,77 +33,52 @@ namespace FCS_Server.refs
 
             /*****************/
             // Build response byte array
-            Byte[] response = new byte[resultCode.Length + 1 + serviceCode.Length + worldNo.Length];
+            // Response: Header - Echo Content - Result Code - Condition Type - Service Code - World Number
+            Byte[] response = new byte[PacketStructure.HEADER_LENGTH + PacketStructure.ECHO_CONTENT_LENGTH + PacketStructure.INITIALIZE_RESULT_CODE_LENGTH + 1 + serviceCode.Length + PacketStructure.INITIALIZE_WORLD_NUMBER_LENGTH];
 
-            int pos = 0;
-            for(int i=0; i<resultCode.Length; i++)
-            {
-                response[pos] = resultCode[i];
-                pos++;
-            }
+            // Copy header and echo content into response
+            Buffer.BlockCopy( _packet , PacketStructure.HEADER_OFFSET , response , PacketStructure.HEADER_OFFSET , PacketStructure.HEADER_LENGTH+PacketStructure.ECHO_CONTENT_LENGTH );
 
-            response[pos] = conditionType;
-            pos++;
+            // Copy Result Code into response
+            Buffer.BlockCopy( resultCode , 0 , response , PacketStructure.INITIALIZE_RESULT_CODE_OFFSET , resultCode.Length );
 
-            for(int i=0; i < serviceCode.Length; i++)
-            {
-                response[pos] = serviceCode[i];
-                pos++;
-            }
+            // Copy condition type into response
+            response[PacketStructure.INITIALIZE_CONDITION_TYPE_OFFSET] = conditionType;
 
-            for(int i=0; i<worldNo.Length; i++)
-            {
-                response[pos] = worldNo[i];
-                pos++;
-            }
+            // Copy Service Code into response
+            Buffer.BlockCopy( serviceCode , 0 , response , PacketStructure.INITIALIZE_RESPONSE_SERVICE_CODE_OFFSET , serviceCode.Length );
+            Buffer.BlockCopy( worldNo , 0 , response , PacketStructure.INITIALIZE_RESPONSE_SERVICE_CODE_OFFSET + serviceCode.Length , worldNo.Length );
 
             return response;
+        }
+
+        public static Byte[] KeepAlive( Byte[] _packet )
+        {
+            return new byte[3];
         }
 
         public static Byte[] BuildWorldNo( Byte[] _packet, int ServiceCodeLength )
         {
             // Get World No Offset from Packet
-            int worldNoOffset = PacketStructure.PACKET_SERVICE_CODE_OFFSET + ServiceCodeLength;
+            int worldNoOffset = PacketStructure.INITIALIZE_SERVICE_CODE_LENGTH_OFFSET + ServiceCodeLength;
 
             // Create the Byte array
-            Byte[] worldNo = new byte[PacketStructure.PACKET_WORLD_NO_LENGTH];
+            Byte[] worldNo = new byte[PacketStructure.INITIALIZE_WORLD_NUMBER_LENGTH];
 
-            // Populate Byte Array
-            int j = worldNoOffset;
-            for (int i = 0; i < PacketStructure.PACKET_WORLD_NO_LENGTH; i++)
-            {
-                worldNo[i] = _packet[j];
-                j++;
-            }
+            Buffer.BlockCopy( _packet , worldNoOffset , worldNo , 0 , PacketStructure.INITIALIZE_WORLD_NUMBER_LENGTH );
 
             return worldNo;
         }
         public static Byte[] BuildServiceCode( Byte[] _packet )
         {
-            Byte[] serviceCode = new byte[PacketStructure.PACKET_SERVICE_CODE_LENGTH];
-            serviceCode[0] = _packet[PacketStructure.PACKET_SERVICE_CODE_OFFSET];
-            serviceCode[1] = _packet[PacketStructure.PACKET_SERVICE_CODE_OFFSET+1];
-            serviceCode[2] = _packet[PacketStructure.PACKET_SERVICE_CODE_OFFSET+2];
-            serviceCode[3] = _packet[PacketStructure.PACKET_SERVICE_CODE_OFFSET+3];
+            // Get size of Service Code string
+            int serviceCodeLength = BitConverter.ToInt32( _packet , PacketStructure.INITIALIZE_SERVICE_CODE_LENGTH_OFFSET );
+            
+            // Return the entire Service Code block ( Length + Code )
+            Byte[] serviceCode = new byte[PacketStructure.INITIALIZE_SERVICE_CODE_LENGTH + serviceCodeLength];
+            Buffer.BlockCopy( _packet , PacketStructure.INITIALIZE_SERVICE_CODE_LENGTH_OFFSET , serviceCode , 0 , PacketStructure.INITIALIZE_SERVICE_CODE_LENGTH + serviceCodeLength );
 
-            Byte[] serviceCodeString = new byte[serviceCode[3]];
-
-            Byte[] svcCode = new byte[serviceCode.Length + serviceCodeString.Length];
-
-            int pos = PacketStructure.PACKET_SERVICE_CODE_OFFSET + serviceCode.Length;
-
-            for (int i=0; i<svcCode.Length; i++)
-            {
-                if( i < serviceCode.Length)
-                {
-                    svcCode[i] = serviceCode[i];
-                } else
-                {
-                    svcCode[i] = _packet[pos];
-                    pos++;
-                }
-            }
-            return svcCode;
+            return serviceCode;
         }
     }
 }

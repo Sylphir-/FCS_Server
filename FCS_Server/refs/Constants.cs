@@ -18,5 +18,6 @@ namespace FCS_Server.refs
         public const string SERVER_CONN_WAITING = "Aguardando Conexao";
         public const string SERVER_STREAM_UNREADABLE = "Dados recebidos ilegiveis";
         public const string SERVER_STREAM_PACKET_RECEIVED = "Pacote Recebido: ";
+        public const string SEND_RESPONSE_EXCEPTION_CANT_WRITE = "Conexão não permite escrita, resposta abortada.";
     }
 }
