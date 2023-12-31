@@ -62,15 +62,34 @@ namespace FCS_Server.refs
         public static Byte[] KeepAlive( Byte[] _packet )
         {
             // Get Result Code
-            int resultCode = ResultCode.kRCSuccess;
+            int iResultCode = ResultCode.kRCSuccess;
+            byte[] resultCode = BitConverter.GetBytes( iResultCode );
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse( resultCode );
 
             // Get Condition Type
             byte conditionType = ConditionType.kCT_Running;
 
+            // Create Response block
             Byte[] response = new byte[PacketStructure.HEADER_LENGTH + PacketStructure.ECHO_CONTENT_LENGTH + PacketStructure.INITIALIZE_RESULT_CODE_LENGTH + PacketStructure.INITIALIZE_CONDITION_TYPE_LENGTH];
 
-            Buffer.BlockCopy( _packet , 0 , response , 0 , PacketStructure.HEADER_LENGTH + PacketStructure.ECHO_CONTENT_LENGTH );
-            Buffer.BlockCopy( BitConverter.GetBytes( resultCode ) , 0 , response , PacketStructure.KEEPALIVE_RESPONSE_RESULT_CODE_OFFSET , PacketStructure.INITIALIZE_RESULT_CODE_LENGTH );
+            // Calculate packet length
+            int iPacketLength = response.Length - PacketStructure.HEADER_LENGTH;
+            byte[] packetLength = BitConverter.GetBytes( iPacketLength );
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse( packetLength );
+
+            // Set Reserved byte
+            response[0] = PacketType.HEADER;
+
+            // Set packet length
+            Buffer.BlockCopy( packetLength , 0 , response , PacketStructure.PACKET_LENGTH_OFFSET , PacketStructure.PACKET_LENGTH_LENGTH );
+
+            // Set echo content
+            Buffer.BlockCopy( _packet , PacketStructure.ECHO_CONTENT_OFFSET , response , PacketStructure.ECHO_CONTENT_OFFSET , PacketStructure.ECHO_CONTENT_LENGTH );
+
+            // Set Keep Alive response
+            Buffer.BlockCopy( resultCode , 0 , response , PacketStructure.KEEPALIVE_RESPONSE_RESULT_CODE_OFFSET , PacketStructure.INITIALIZE_RESULT_CODE_LENGTH );
             response[PacketStructure.KEEPALIVE_RESPONSE_CONDITION_TYPE_OFFSET] = conditionType;
 
             return response;

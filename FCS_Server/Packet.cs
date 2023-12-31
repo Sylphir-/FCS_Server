@@ -90,7 +90,7 @@ namespace FCS_Server
                 }
             }catch(Exception e)
             {
-                Console.WriteLine( e.ToString() ); 
+                Console.WriteLine( e.ToString() );
             }
         }
     }

@@ -19,6 +19,7 @@ namespace FCS_Server
         public static void Main( string[] args )
         {
             Server.Start();
+            Console.Read();
         }
 
         /**
@@ -30,80 +31,75 @@ namespace FCS_Server
             {
                 // Starts a new Listener for this thread
                 TcpListener listener = new TcpListener( IPAddress.Any , Constants.port );
+                TcpClient client = new TcpClient();
+                NetworkStream stream;
                 listener.Start();
+
+                do
+                {
+                    Console.WriteLine( String.Format( "[{0:HH:mm:ss}][SERVER] Waiting for connection..." , DateTime.Now ) );
+                    client = listener.AcceptTcpClient();
+                }
+                while (!client.Connected);
+
+                Console.WriteLine( String.Format( "[{0:HH:mm:ss}][SERVER] Connected to " + client.Client.RemoteEndPoint + ".", DateTime.Now ) );
+                stream = client.GetStream();
 
                 try
                 {
-                    Console.WriteLine( Constants.SERVER_CONN_WAITING );
                     while (true)
                     {
-                        /*if (listener.Pending())
-                        {*/
-                            // If there is a pending connection, accept it
-                            TcpClient client = listener.AcceptTcpClient();
-                            NetworkStream stream = client.GetStream();
-
-                            if (stream.CanRead)
+                        if (stream.CanRead)
+                        {
+                            do
                             {
-                                if( client.Connected)
+                                // Creates a Buffer for data packets
+                                Byte[] bytesBuffer = new byte[PacketStructure.HEADER_LENGTH];
+                                int bytesRead = 0;
+
+                                // Reads the HEADER_LENGTH bytes of data
+                                bytesRead = stream.Read( bytesBuffer , 0 , bytesBuffer.Length );
+
+                                if (bytesBuffer[0] == PacketType.HEADER)
                                 {
-                                    Console.WriteLine( String.Format( "[{0:HH:mm:ss}][SERVER] Connected to " + client.Client.RemoteEndPoint, DateTime.Now ) );
-                                }
-
-                                // While there is data to be read
-                                do
-                                {
-                                    // Creates a Buffer for data packets
-                                    Byte[] bytesBuffer = new byte[PacketStructure.HEADER_LENGTH];
-                                    int bytesRead = 0;
-
-                                    // Reads the HEADER_LENGTH bytes of data
-                                    bytesRead = stream.Read( bytesBuffer , 0 , bytesBuffer.Length );
-
-                                    if (bytesBuffer[0] == PacketType.HEADER)
+                                    // Converte os 4 bytes do Packet Length para ler o resto dos dados
+                                    byte[] pktLength = new byte[4]{
+                                        bytesBuffer[PacketStructure.PACKET_LENGTH_OFFSET],
+                                        bytesBuffer[PacketStructure.PACKET_LENGTH_OFFSET+1],
+                                        bytesBuffer[PacketStructure.PACKET_LENGTH_OFFSET+2],
+                                        bytesBuffer[PacketStructure.PACKET_LENGTH_OFFSET+3],
+                                    };
+                                    if (BitConverter.IsLittleEndian)
                                     {
-                                        // Converte os 4 bytes do Packet Length para ler o resto dos dados
-                                        byte[] pktLength = new byte[4]{
-                                            bytesBuffer[PacketStructure.PACKET_LENGTH_OFFSET],
-                                            bytesBuffer[PacketStructure.PACKET_LENGTH_OFFSET+1],
-                                            bytesBuffer[PacketStructure.PACKET_LENGTH_OFFSET+2],
-                                            bytesBuffer[PacketStructure.PACKET_LENGTH_OFFSET+3],
-                                        };
-                                        if (BitConverter.IsLittleEndian)
-                                        {
-                                            Array.Reverse( pktLength );
-                                        }
-                                        Int16 packetLength = BitConverter.ToInt16( pktLength , 0 );
-
-                                        // Cria packet final
-                                        Byte[] packet = new byte[PacketStructure.HEADER_LENGTH + packetLength];
-
-                                        // Copia o buffer pro packet
-                                        Buffer.BlockCopy( bytesBuffer , 0 , packet , 0 , bytesBuffer.Length );
-
-                                        // Le o resto do packet
-                                        byte[] packetBuffer = new byte[packetLength];
-                                        bytesRead += stream.Read( packetBuffer , 0 , packetLength );
-
-                                        Console.WriteLine( BitConverter.ToString( packetBuffer ) );
-
-                                        // Copia pro packet
-                                        Buffer.BlockCopy( packetBuffer , 0 , packet , PacketStructure.ECHO_CONTENT_OFFSET , packetBuffer.Length );
-
-                                        // Processa o packet
-                                        new Thread( () =>
-                                        {
-                                            Packet p = new Packet( packet , client );
-
-                                        } ).Start();
-
+                                        Array.Reverse( pktLength );
                                     }
-                                } while (stream.DataAvailable);
-                            } else
-                            {
-                                Console.WriteLine( Constants.SERVER_STREAM_UNREADABLE );
-                            }
-                        /*}*/
+                                    Int16 packetLength = BitConverter.ToInt16( pktLength , 0 );
+
+                                    // Cria packet final
+                                    Byte[] packet = new byte[PacketStructure.HEADER_LENGTH + packetLength];
+
+                                    // Copia o buffer pro packet
+                                    Buffer.BlockCopy( bytesBuffer , 0 , packet , 0 , bytesBuffer.Length );
+
+                                    // Le o resto do packet
+                                    byte[] packetBuffer = new byte[packetLength];
+                                    bytesRead += stream.Read( packetBuffer , 0 , packetLength );
+
+                                    // Copia pro packet
+                                    Buffer.BlockCopy( packetBuffer , 0 , packet , PacketStructure.ECHO_CONTENT_OFFSET , packetBuffer.Length );
+
+                                    // Processa o packet
+                                    Packet p = new Packet( packet , client );
+
+                                }
+                            } while (stream.DataAvailable);
+
+                        } else
+                        {
+                            Console.WriteLine( "cant read" );
+                            Console.WriteLine( Constants.SERVER_STREAM_UNREADABLE );
+                        }
+
                     }
                 } catch (Exception e)
                 {
