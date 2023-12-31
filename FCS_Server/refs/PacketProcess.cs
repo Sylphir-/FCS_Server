@@ -54,7 +54,22 @@ namespace FCS_Server.refs
 
         public static Byte[] KeepAlive( Byte[] _packet )
         {
-            return new byte[3];
+            // Copy Caching Product Version to memory
+            long CachingProductVersion = BitConverter.ToInt64( _packet , PacketStructure.KEEPALIVE_CACHING_PRODUCT_VERSION_OFFSET );
+
+            // Get Result Code
+            int resultCode = ResultCode.kRCSuccess;
+
+            // Get Condition Type
+            byte conditionType = ConditionType.kCT_Running;
+
+            Byte[] response = new byte[PacketStructure.HEADER_LENGTH + PacketStructure.ECHO_CONTENT_LENGTH + PacketStructure.INITIALIZE_RESULT_CODE_LENGTH + PacketStructure.INITIALIZE_CONDITION_TYPE_LENGTH];
+
+            Buffer.BlockCopy( _packet , 0 , response , 0 , PacketStructure.HEADER_LENGTH + PacketStructure.ECHO_CONTENT_LENGTH );
+            Buffer.BlockCopy( BitConverter.GetBytes( resultCode ) , 0 , response , PacketStructure.KEEPALIVE_RESPONSE_RESULT_CODE_OFFSET , PacketStructure.INITIALIZE_RESULT_CODE_LENGTH );
+            response[PacketStructure.KEEPALIVE_RESPONSE_CONDITION_TYPE_OFFSET] = conditionType;
+
+            return response;
         }
 
         public static Byte[] BuildWorldNo( Byte[] _packet, int ServiceCodeLength )

@@ -55,7 +55,7 @@ namespace FCS_Server.refs
         // |        Integer      |    String     |   Integer   |          Integer         |
         // '---------------------'---------------'-------------'--------------------------'
 
-        // Request
+        // Response
         // .-------------.----------------.---------------.-------------.
         // | Result Code | Condition Type |  Service Code |  World No   |
         // |-------------+----------------+---------------+-------------|
@@ -79,5 +79,33 @@ namespace FCS_Server.refs
         public const short INITIALIZE_CONDITION_TYPE_LENGTH = 1;
         public const short INITIALIZE_CONDITION_TYPE_OFFSET = 14;
         public const short INITIALIZE_RESPONSE_SERVICE_CODE_OFFSET = 15;
+
+        // Keep Alive
+
+        // Request
+        // .-------------------------.
+        // | Caching Product Version |
+        // |-------------------------+
+        // | 00 00 00 00 00 00 00 00 |
+        // | 10 11 12 13 14 15 16 17 |
+        // |           Long          |
+        // '-------------------------'
+
+        // Response
+        // .-------------.----------------.
+        // | Result Code | Condition Type |
+        // |-------------+----------------+
+        // | 00 00 00 00 |       00       |
+        // | 10 11 12 13 |       14       |
+        // |   Integer   |      Byte      |
+        // '-------------'----------------'
+
+        // Length
+        public const short KEEPALIVE_CACHING_PRODUCT_VERSION_LENGTH = 8;
+
+        // Offset
+        public const short KEEPALIVE_CACHING_PRODUCT_VERSION_OFFSET = 10;
+        public const short KEEPALIVE_RESPONSE_RESULT_CODE_OFFSET = 10;
+        public const short KEEPALIVE_RESPONSE_CONDITION_TYPE_OFFSET = 14;
     }
 }
