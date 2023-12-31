@@ -18,13 +18,13 @@ namespace FCS_Server
          */
         public static void Main( string[] args )
         {
-            Server.start();
+            Server.Start();
         }
 
         /**
          * Server startup
          */
-        public static void start()
+        public static void Start()
         {
             try
             {
@@ -65,22 +65,32 @@ namespace FCS_Server
                                     if(bytesBuffer[0] == PacketType.HEADER)
                                     {
                                         // Converte os 4 bytes do Packet Length para ler o resto dos dados
-                                        int packetLength = BitConverter.ToInt32( bytesBuffer , PacketStructure.PACKET_LENGTH_OFFSET );
+                                        byte[] pktLength = new byte[4]{
+                                            bytesBuffer[PacketStructure.PACKET_LENGTH_OFFSET],
+                                            bytesBuffer[PacketStructure.PACKET_LENGTH_OFFSET+1],
+                                            bytesBuffer[PacketStructure.PACKET_LENGTH_OFFSET+2],
+                                            bytesBuffer[PacketStructure.PACKET_LENGTH_OFFSET+3],
+                                        };
+                                        if (BitConverter.IsLittleEndian)
+                                        {
+                                            Array.Reverse( pktLength );
+                                        }
+                                        Int16 packetLength = BitConverter.ToInt16( pktLength , 0 );
 
                                         // Cria packet final
-                                        Byte[] packet = new byte[bytesBuffer.Length + packetLength];
+                                        Byte[] packet = new byte[PacketStructure.HEADER_LENGTH + packetLength];
 
                                         // Copia o buffer pro packet
                                         Buffer.BlockCopy( bytesBuffer , 0 , packet , 0 , bytesBuffer.Length );
 
                                         // Le o resto do packet
-                                        bytesBuffer = new byte[packetLength];
-                                        bytesRead += stream.Read( bytesBuffer , 0 , packetLength );
+                                        byte[] packetBuffer = new byte[packetLength];
+                                        bytesRead += stream.Read( packetBuffer , 0 , packetLength );
+
+                                        Console.WriteLine( BitConverter.ToString( packetBuffer ) );
 
                                         // Copia pro packet
-                                        Buffer.BlockCopy( bytesBuffer , 0 , packet , 0 , bytesBuffer.Length );
-
-                                        Console.WriteLine( "Enviando pacote pra processamento => " + BitConverter.ToString( packet ) );
+                                        Buffer.BlockCopy( packetBuffer , 0 , packet , PacketStructure.ECHO_CONTENT_OFFSET, packetBuffer.Length );
 
                                         // Processa o packet
                                         new Thread( () =>

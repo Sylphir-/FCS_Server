@@ -35,6 +35,7 @@ namespace FCS_Server.refs
         // Offsets
         public const short HEADER_OFFSET = 0;
         public const short ECHO_CONTENT_OFFSET = 5;
+        public const short PACKET_DATA_OFFSET = 10;
         //  // Header
         public const short HEADER_RESERVED_OFFSET = 0;
         public const short PACKET_LENGTH_OFFSET = 1;

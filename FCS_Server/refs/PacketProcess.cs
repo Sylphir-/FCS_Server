@@ -37,7 +37,14 @@ namespace FCS_Server.refs
             Byte[] response = new byte[PacketStructure.HEADER_LENGTH + PacketStructure.ECHO_CONTENT_LENGTH + PacketStructure.INITIALIZE_RESULT_CODE_LENGTH + 1 + serviceCode.Length + PacketStructure.INITIALIZE_WORLD_NUMBER_LENGTH];
 
             // Copy header and echo content into response
-            Buffer.BlockCopy( _packet , PacketStructure.HEADER_OFFSET , response , PacketStructure.HEADER_OFFSET , PacketStructure.HEADER_LENGTH+PacketStructure.ECHO_CONTENT_LENGTH );
+            response[0] = PacketType.HEADER;
+            int iPacketLength = response.Length - PacketStructure.HEADER_LENGTH;
+            byte[] packetLength = BitConverter.GetBytes( iPacketLength );
+            if( BitConverter.IsLittleEndian )
+                Array.Reverse( packetLength );
+
+            Buffer.BlockCopy( packetLength, 0, response , PacketStructure.PACKET_LENGTH_OFFSET , PacketStructure.PACKET_LENGTH_LENGTH );
+            Buffer.BlockCopy( _packet , PacketStructure.ECHO_CONTENT_OFFSET , response , PacketStructure.ECHO_CONTENT_OFFSET , PacketStructure.ECHO_CONTENT_LENGTH );
 
             // Copy Result Code into response
             Buffer.BlockCopy( resultCode , 0 , response , PacketStructure.INITIALIZE_RESULT_CODE_OFFSET , resultCode.Length );
@@ -87,7 +94,16 @@ namespace FCS_Server.refs
         public static Byte[] BuildServiceCode( Byte[] _packet )
         {
             // Get size of Service Code string
-            int serviceCodeLength = BitConverter.ToInt32( _packet , PacketStructure.INITIALIZE_SERVICE_CODE_LENGTH_OFFSET );
+            byte[] svcCodLgth = new byte[4];
+            svcCodLgth[0] = _packet[PacketStructure.INITIALIZE_SERVICE_CODE_LENGTH_OFFSET];
+            svcCodLgth[1] = _packet[PacketStructure.INITIALIZE_SERVICE_CODE_LENGTH_OFFSET+1];
+            svcCodLgth[2] = _packet[PacketStructure.INITIALIZE_SERVICE_CODE_LENGTH_OFFSET+2];
+            svcCodLgth[3] = _packet[PacketStructure.INITIALIZE_SERVICE_CODE_LENGTH_OFFSET+3];
+            if( BitConverter.IsLittleEndian )
+            {
+                Array.Reverse( svcCodLgth );
+            }
+            int serviceCodeLength = BitConverter.ToInt32( svcCodLgth , 0 );
             
             // Return the entire Service Code block ( Length + Code )
             Byte[] serviceCode = new byte[PacketStructure.INITIALIZE_SERVICE_CODE_LENGTH + serviceCodeLength];

@@ -64,7 +64,7 @@ namespace FCS_Server.util
         override public string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat( "[{0:yyyyMMdd}][PACKET EXCEPTION][TRANSACTION ID: {1}][TRANSACTION TYPE: {2}]: {3}\n{4}" , DateTime.Now , GetTransactionID() , GetPacketType() , GetErrorMessage() , GetPacketString() );
+            sb.AppendFormat( "[{0:YYYY-MM-dd HH:m:s}][PACKET EXCEPTION][TRANSACTION ID: {1}][TRANSACTION TYPE: {2}]: {3}\n{4}" , DateTime.Now , GetTransactionID() , GetPacketType() , GetErrorMessage() , GetPacketString() );
             return sb.ToString();
         }
     }

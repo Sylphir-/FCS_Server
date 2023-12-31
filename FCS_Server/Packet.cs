@@ -11,15 +11,15 @@ namespace FCS_Server
 {
     public class Packet
     {
-        private byte[] packet;
+        private readonly byte[] packet;
         private TcpClient client;
         public Packet( byte[] _packet, TcpClient _client )
         {
             packet = _packet;
             client = _client;
 
-            Console.WriteLine( String.Format( "[{0:yyyyMMdd}][PACKET]: Packet Received > " , DateTime.Now ) + BitConverter.ToString( _packet ) );
-            processPacket();
+            Console.WriteLine( String.Format( "[{0:HH:mm:ss}][PACKET]: Packet Received > " , DateTime.Now ) + BitConverter.ToString( _packet ) );
+            ProcessPacket();
         }
 
         private byte[] GetHeader()
@@ -49,7 +49,7 @@ namespace FCS_Server
             return b;
         }
 
-        private void processPacket()
+        private void ProcessPacket()
         {
             Byte[] _response;
             try
@@ -76,7 +76,7 @@ namespace FCS_Server
         }
         private void SendResponse( Byte[] response )
         {
-            Console.WriteLine( String.Format( "[{0:yyyyMMdd}][PACKET]: Sending Response Packet > " , DateTime.Now ) + BitConverter.ToString( response ) );
+            Console.WriteLine( String.Format( "[{0:HH:m:s}][PACKET]: Response > " , DateTime.Now ) + BitConverter.ToString( response ) );
             try
             {
                 NetworkStream stream = client.GetStream();
