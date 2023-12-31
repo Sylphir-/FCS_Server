@@ -59,6 +59,8 @@ namespace FCS_Server
 
                                     // Reads the HEADER_LENGTH bytes of data
                                     bytesRead = stream.Read( bytesBuffer , 0 , bytesBuffer.Length );
+
+                                    Console.WriteLine( "Read " + bytesRead + " bytes: " + BitConverter.ToString( bytesBuffer ) );
                                         
                                     if(bytesBuffer[0] == PacketType.HEADER)
                                     {
@@ -77,6 +79,8 @@ namespace FCS_Server
 
                                         // Copia pro packet
                                         Buffer.BlockCopy( bytesBuffer , 0 , packet , 0 , bytesBuffer.Length );
+
+                                        Console.WriteLine( "Enviando pacote pra processamento => " + BitConverter.ToString( packet ) );
 
                                         // Processa o packet
                                         new Thread( () =>
