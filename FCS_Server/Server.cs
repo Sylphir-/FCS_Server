@@ -37,8 +37,8 @@ namespace FCS_Server
                     Console.WriteLine( Constants.SERVER_CONN_WAITING );
                     while (true)
                     {
-                        if (listener.Pending())
-                        {
+                        /*if (listener.Pending())
+                        {*/
                             // If there is a pending connection, accept it
                             TcpClient client = listener.AcceptTcpClient();
                             NetworkStream stream = client.GetStream();
@@ -103,7 +103,7 @@ namespace FCS_Server
                             {
                                 Console.WriteLine( Constants.SERVER_STREAM_UNREADABLE );
                             }
-                        }
+                        /*}*/
                     }
                 } catch (Exception e)
                 {
