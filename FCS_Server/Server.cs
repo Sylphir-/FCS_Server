@@ -47,11 +47,11 @@ namespace FCS_Server
                             {
                                 if( client.Connected)
                                 {
-                                    Console.WriteLine( "Connected to " + client.Client.RemoteEndPoint );
+                                    Console.WriteLine( String.Format( "[{0:HH:mm:ss}][SERVER] Connected to " + client.Client.RemoteEndPoint, DateTime.Now ) );
                                 }
 
                                 // While there is data to be read
-                                while (stream.DataAvailable)
+                                do
                                 {
                                     // Creates a Buffer for data packets
                                     Byte[] bytesBuffer = new byte[PacketStructure.HEADER_LENGTH];
@@ -60,9 +60,7 @@ namespace FCS_Server
                                     // Reads the HEADER_LENGTH bytes of data
                                     bytesRead = stream.Read( bytesBuffer , 0 , bytesBuffer.Length );
 
-                                    Console.WriteLine( "Read " + bytesRead + " bytes: " + BitConverter.ToString( bytesBuffer ) );
-                                        
-                                    if(bytesBuffer[0] == PacketType.HEADER)
+                                    if (bytesBuffer[0] == PacketType.HEADER)
                                     {
                                         // Converte os 4 bytes do Packet Length para ler o resto dos dados
                                         byte[] pktLength = new byte[4]{
@@ -90,17 +88,17 @@ namespace FCS_Server
                                         Console.WriteLine( BitConverter.ToString( packetBuffer ) );
 
                                         // Copia pro packet
-                                        Buffer.BlockCopy( packetBuffer , 0 , packet , PacketStructure.ECHO_CONTENT_OFFSET, packetBuffer.Length );
+                                        Buffer.BlockCopy( packetBuffer , 0 , packet , PacketStructure.ECHO_CONTENT_OFFSET , packetBuffer.Length );
 
                                         // Processa o packet
                                         new Thread( () =>
                                         {
-                                            Packet p = new Packet( packet, client );
+                                            Packet p = new Packet( packet , client );
 
-                                        }).Start();
-                                        
+                                        } ).Start();
+
                                     }
-                                }
+                                } while (stream.DataAvailable);
                             } else
                             {
                                 Console.WriteLine( Constants.SERVER_STREAM_UNREADABLE );

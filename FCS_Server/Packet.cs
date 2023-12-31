@@ -18,7 +18,7 @@ namespace FCS_Server
             packet = _packet;
             client = _client;
 
-            Console.WriteLine( String.Format( "[{0:HH:mm:ss}][PACKET]: Packet Received > " , DateTime.Now ) + BitConverter.ToString( _packet ) );
+            Console.WriteLine( String.Format( "[{0:HH:mm:ss}][PACKET][RECEIVED] " , DateTime.Now ) + BitConverter.ToString( _packet ) );
             ProcessPacket();
         }
 
@@ -76,7 +76,7 @@ namespace FCS_Server
         }
         private void SendResponse( Byte[] response )
         {
-            Console.WriteLine( String.Format( "[{0:HH:m:s}][PACKET]: Response > " , DateTime.Now ) + BitConverter.ToString( response ) );
+            Console.WriteLine( String.Format( "[{0:HH:mm:ss}][PACKET][RESPONSE] " , DateTime.Now ) + BitConverter.ToString( response ) );
             try
             {
                 NetworkStream stream = client.GetStream();

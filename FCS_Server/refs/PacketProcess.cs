@@ -61,9 +61,6 @@ namespace FCS_Server.refs
 
         public static Byte[] KeepAlive( Byte[] _packet )
         {
-            // Copy Caching Product Version to memory
-            long CachingProductVersion = BitConverter.ToInt64( _packet , PacketStructure.KEEPALIVE_CACHING_PRODUCT_VERSION_OFFSET );
-
             // Get Result Code
             int resultCode = ResultCode.kRCSuccess;
 
