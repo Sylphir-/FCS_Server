@@ -18,7 +18,7 @@ namespace FCS_Server
             packet = _packet;
             client = _client;
 
-            Console.WriteLine( String.Format( "[{0:yyyyMMdd}][PACKET]: Packet Received ({1})" , DateTime.Now , BitConverter.ToString( _packet ) ) );
+            Console.WriteLine( String.Format( "[{0:yyyyMMdd}][PACKET]: Packet Received > " , DateTime.Now ) + BitConverter.ToString( _packet ) );
             processPacket();
         }
 
@@ -51,21 +51,24 @@ namespace FCS_Server
 
         private void processPacket()
         {
-            Byte[] partialResponse;
+            Byte[] _response;
             try
             {
                 switch (this.GetPacketType())
                 {
                     case PacketType.Initialize:
-                        partialResponse = PacketProcess.Initialize( packet );
+                        _response = PacketProcess.Initialize( packet );
+                        break;
+                    case PacketType.KeepAlive:
+                        _response = PacketProcess.KeepAlive( packet );
                         break;
                     default:
-                        partialResponse = new Byte[1];
-                        partialResponse[0] = 0x00;
+                        _response = new Byte[1];
+                        _response[0] = 0x00;
                         throw new PacketException( packet , PacketException.Codes.INVALID_PACKET_TYPE );
                 }
 
-                //SendResponse( Packet.AppendHeader( partialResponse ) );
+                SendResponse( _response );
             }catch(PacketException e)
             {
                 Console.Error.WriteLine( e.ToString() );
@@ -73,6 +76,7 @@ namespace FCS_Server
         }
         private void SendResponse( Byte[] response )
         {
+            Console.WriteLine( String.Format( "[{0:yyyyMMdd}][PACKET]: Sending Response Packet > " , DateTime.Now ) + BitConverter.ToString( response ) );
             try
             {
                 NetworkStream stream = client.GetStream();
