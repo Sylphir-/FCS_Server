@@ -62,6 +62,9 @@ namespace FCS_Server
                     case PacketType.KeepAlive:
                         _response = PacketProcess.KeepAlive( packet );
                         break;
+                    case PacketType.GameLogin:
+                        _response = PacketProcess.GameLogin( packet );
+                        break;
                     default:
                         _response = new Byte[1];
                         _response[0] = 0x00;

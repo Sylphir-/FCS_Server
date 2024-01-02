@@ -19,6 +19,9 @@ namespace FCS_Server
         public static void Main( string[] args )
         {
             Server.Start();
+
+            Console.WriteLine( " \n\n" );
+            Console.WriteLine( "Server is halted. Press any key to close the console." );
             Console.Read();
         }
 
@@ -27,6 +30,30 @@ namespace FCS_Server
          */
         public static void Start()
         {
+            Console.WriteLine( "Testing Game Login packets..." );
+            Byte[] testPacket = new byte[] { 
+                /* HEADER */
+                PacketType.HEADER , 0x00 , 0x00 , 0x00 , 0x4f ,
+                /* ECHO CONTENT */
+                PacketType.GameLogin , 0x00 , 0x00 , 0x00 , 0x0C ,
+                /* DATA */
+                // Return Structure Type
+                0x00 , 0x00 , 0x00 , 0x0A ,
+                // User Number
+                0x00 , 0x00 , 0x00 , 0x0A ,
+                0x32 , 0x32 , 0x34 , 0x35 , 0x35 , 0x39 , 0x31 , 0x30 , 0x34 , 0x31,
+                // Authentication Key
+                0x00 , 0x00 , 0x00 , 0x24 ,
+                //6A7E76A7-815F-49BF-94F8-FDF560DC0945
+                0x36 , 0x41 , 0x37 , 0x45 , 0x37 , 0x36 , 0x41 , 0x37 , 0x2d , 0x38 , 0x31 , 0x35 , 0x46 , 0x2D , 0x34 ,  0x39 , 0x42 , 0x46 ,
+                0x2d , 0x39 , 0x34 , 0x46 , 0x38 , 0x2d , 0x46 , 0x44 , 0x46 , 0x35 , 0x36 , 0x30 , 0x44 , 0x43 , 0x30 , 0x39 , 0x34 , 0x35 ,
+                // Client IP
+                0x00 , 0x00 , 0x00 , 0x08 ,
+                0x31 , 0x30 , 0x2E , 0x30 , 0x2E , 0x30 , 0x2E , 0x31
+            };
+
+            PacketProcess.GameLogin( testPacket ); 
+            /*
             try
             {
                 // Starts a new Listener for this thread
@@ -112,6 +139,7 @@ namespace FCS_Server
                 // Starting a listener failed
                 Console.WriteLine( e.ToString() );
             }
+            */
         }
     }
 }
