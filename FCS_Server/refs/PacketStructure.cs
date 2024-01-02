@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,6 +25,10 @@ namespace FCS_Server.refs
         public const short CONDITION_TYPE_LENGTH = 1;
         public const short RESULT_CODE_LENGTH = 4;
         public const short STRUCTURE_TYPE_LENGTH = 4;
+        public const short SERVICE_CODE_LENGTH = 4;
+
+        public const short INT_LENGTH = 4;
+        public const short BYTE_LENGTH = 1;
 
         /*********************************************** HEADER */
         // Lenghts
@@ -70,7 +75,6 @@ namespace FCS_Server.refs
         // '-------------'----------------'---------------'-------------'
 
         // Length
-        public const short INITIALIZE_SERVICE_CODE_LENGTH = 4;
         public const short INITIALIZE_WORLD_NUMBER_LENGTH = 4;
         public const short INITIALIZE_KEEP_ALIVE_LENGTH = 4;
 
@@ -111,43 +115,26 @@ namespace FCS_Server.refs
         public const short KEEPALIVE_RESPONSE_RESULT_CODE_OFFSET = 10;
         public const short KEEPALIVE_RESPONSE_CONDITION_TYPE_OFFSET = 14;
 
-        //********************************************************************************************* Game Login
+        //************************************************************************ Validate Authentication Key With User Info
 
         // Request
-        // .------------------------------------------------------------------.
-        // | Return Structure Type | User Number |   Auth Key  |   Client IP  |
-        // |-----------------------+-------------+-------------+--------------|
-        // |      00 00 00 00      | 00 00 00 00~| 00 00 00 00~|  00 00 00 00~|
-        // |      10 11 12 13      | 14 15 16 17~| ~  ~  ~  ~ ~|  ~  ~  ~  ~ ~|
-        // |          Byte         |     Int     |     Int     |     Int      |
-        // '-----------------------'-------------'-------------'--------------'
+        // .--------------------.----------------.--------------------.-----------.-------------------.
+        // | Callback Attribute | Account Number | Authentication Key | Extension |     Client IP     |
+        // |--------------------+----------------+--------------------+-----------+-------------------|
+        // | 10                 | ~              | ~                  | ~         | ~                 |
+        // | Int (Len) + String | Int            | Int(Len) + String  | Int+Str   | Int(Len) + String |
+        // '--------------------'----------------'--------------------'-----------'-------------------'
 
         // Response
-        // .-------------.----------------.-----------------------.--------------.------------------.-----------------.-----------------.
-        // | Result Code | Condition Type | Return Structure Type | Is Flat Rate |     User Type    | Str.Arr. Length | Structure Array |
-        // |-------------+----------------+-----------------------+--------------+------------------+-----------------+-----------------|
-        // | 00 00 00 00 |       00       |           00          |      00      |    00 00 00 00   |   00 00 00 00   |      00 ~~      |
-        // | 10 11 12 13 |       14       |           15          |      16      |    17 18 19 20   |   21 22 23 24   |      25 ~~      |
-        // |   Integer   |      Byte      |          Byte         |    Boolean   |      String      |       Int       |     Struct      |
-        // '-------------'----------------'-----------------------'--------------'------------------'-----------------'-----------------'
+        // .-------------.----------------.--------------------.---------------.----------.---------.------------.------------.-----------.
+        // | Result Code | Condition Type | Callback Attribute | Provider Code |  User No | User ID | Account No | Account ID | Extension |
+        // |-------------+----------------+--------------------+---------------+----------+---------+------------+------------+-----------|
+        // | 10 11 12 13 |       14       | 15                 | ~             | ~        | ~       | ~          | ~          | ~         |
+        // |   Integer   |      Byte      | Int+Str            | Int+Str       | Int      | Str     | Int        | Str        | JSON      |
+        // '-------------'----------------'--------------------'---------------'----------'---------'------------'------------'-----------'
 
-        // Length
-        //  // Request
-        public const short GAMELOGIN_USER_NUMBER_LENGTH = 4;
-        public const short GAMELOGIN_AUTH_KEY_LENGTH = 4;
-        public const short GAMELOGIN_CLIENT_IP_LENGTH = 4;
-        //  // Response
-        public const short GAMELOGIN_FLAT_RATE_LENGTH = 1;
-        public const short GAMELOGIN_USER_TYPE_LENGTH = 4;
-        public const short GAMELOGIN_STRUCTURE_ARR_LEN_LENGTH = 4;
+        public const short AUTH_KEY_WITH_USER_INFO_CONDITION_TYPE_OFFSET = 14;
+        public const short AUTH_KEY_WITH_USER_INFO_CALLBACK_ATTRIBUTE_OFFSEST = 15;
 
-        // Offset
-        public const short GAMELOGIN_USER_NUMBER_OFFSET = 14;
-        public const short GAMELOGIN_CONDITION_TYPE_OFFSET = 14;
-        public const short GAMELOGIN_RETURN_STRUCT_OFFSET = 15;
-        public const short GAMELOGIN_FLAT_RATE_OFFSET = 16;
-        public const short GAMELOGIN_USER_TYPE_OFFSET = 17;
-        public const short GAMELOGIN_STRUCTURE_ARR_LEN_OFFSET = 21;
-        public const short GAMELOGIN_STRUCTURE_ARR_OFFSET = 25;
     }
 }

@@ -11,6 +11,7 @@ namespace FCS_Server.refs
     {
         public const Int32 port = 27015;
         public static IPAddress host = IPAddress.Parse( "127.0.0.1" );
+        public const int THREAD_COUNT = 1;
 
         /*************************************************
          *      STRINGS                                  *

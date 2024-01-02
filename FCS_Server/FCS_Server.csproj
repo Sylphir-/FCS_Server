@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Packet.cs" />
+    <Compile Include="refs\ProviderCode.cs" />
     <Compile Include="refs\ReturnStructures.cs" />
     <Compile Include="refs\ConditionType.cs" />
     <Compile Include="refs\ResultCode.cs" />

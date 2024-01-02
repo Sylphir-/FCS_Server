@@ -22,31 +22,9 @@ namespace FCS_Server
             ProcessPacket();
         }
 
-        private byte[] GetHeader()
-        {
-            Byte[] b = new byte[PacketStructure.HEADER_LENGTH];
-            Buffer.BlockCopy( packet , 0 , b , 0 , PacketStructure.HEADER_LENGTH);
-
-            return b;
-        }
-        private byte[] GetEchoContent()
-        {
-            Byte[] b = new Byte[PacketStructure.ECHO_CONTENT_LENGTH];
-            Buffer.BlockCopy( packet , PacketStructure.ECHO_CONTENT_OFFSET , b , 0 , PacketStructure.ECHO_CONTENT_LENGTH );
-
-            return b;
-        }
         private byte GetPacketType()
         {
             return packet[PacketStructure.PACKET_TYPE_OFFSET];
-        }
-
-        private byte[] GetTransactionId()
-        {
-            Byte[] b = new Byte[PacketStructure.TRANSACTION_ID_LENGTH];
-            Buffer.BlockCopy(packet, PacketStructure.TRANSACTION_ID_OFFSET, b, 0, PacketStructure.TRANSACTION_ID_LENGTH );
-
-            return b;
         }
 
         private void ProcessPacket()
@@ -62,8 +40,8 @@ namespace FCS_Server
                     case PacketType.KeepAlive:
                         _response = PacketProcess.KeepAlive( packet );
                         break;
-                    case PacketType.GameLogin:
-                        _response = PacketProcess.GameLogin( packet );
+                    case PacketType.ValidateAuthenticationKeyWithUserInfo:
+                        _response = PacketProcess.ValidateAuthenticationKeyWithUserInfo( packet );
                         break;
                     default:
                         _response = new Byte[1];
