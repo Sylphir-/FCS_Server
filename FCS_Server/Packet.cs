@@ -43,6 +43,9 @@ namespace FCS_Server
                     case PacketType.ValidateAuthenticationKeyWithUserInfo:
                         _response = PacketProcess.ValidateAuthenticationKeyWithUserInfo( packet );
                         break;
+                    case PacketType.WShopCheckBalance:
+                        _response = PacketProcess.WShopCheckBalance( packet );
+                        break;
                     default:
                         _response = new Byte[1];
                         _response[0] = 0x00;

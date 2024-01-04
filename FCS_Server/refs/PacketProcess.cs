@@ -110,77 +110,26 @@ namespace FCS_Server.refs
             int cursor = PacketStructure.PACKET_DATA_OFFSET;
 
             // Extract Callback Attribute
-            byte[] _callbackAttributeLength = new byte[PacketStructure.INT_LENGTH];
-            Buffer.BlockCopy( _packet , cursor , _callbackAttributeLength , 0 , PacketStructure.INT_LENGTH );
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse( _callbackAttributeLength );
-            int callbackAttributeLength = BitConverter.ToInt32( _callbackAttributeLength , 0 );
-            cursor += PacketStructure.INT_LENGTH;
-
-            byte[] callbackAttribute = new byte[callbackAttributeLength];
-            Buffer.BlockCopy( _packet , cursor , callbackAttribute , 0 , callbackAttributeLength );
-            cursor += callbackAttributeLength;
+            byte[] r_callbackAttribute = GetVariableLengthBlock( _packet , cursor );
+            cursor += r_callbackAttribute.Length;
 
             // Extract Account Number
-            byte[] _accountNumber = new byte[PacketStructure.INT_LENGTH];
-            Buffer.BlockCopy( _packet , cursor , _accountNumber , 0 , PacketStructure.INT_LENGTH );
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse( _accountNumber );
-            int accountNumber = BitConverter.ToInt32( _accountNumber , 0 );
+            int r_accountNumber = ByteToInt( _packet , cursor );
             cursor += PacketStructure.INT_LENGTH;
 
             // Extract Authentication Key
-            byte[] _authKeyLength = new byte[PacketStructure.INT_LENGTH];
-            Buffer.BlockCopy( _packet , cursor , _authKeyLength , 0 , PacketStructure.INT_LENGTH );
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse( _authKeyLength );
-            int authKeyLength = BitConverter.ToInt32( _authKeyLength , 0 );
-            cursor += PacketStructure.INT_LENGTH;
-
-            byte[] _authKey = new byte[authKeyLength];
-            Buffer.BlockCopy( _packet , cursor , _authKey , 0 , authKeyLength );
-            cursor += authKeyLength;
+            byte[] r_authKey = GetVariableLengthBlock( _packet , cursor );
+            cursor += r_authKey.Length;
 
             // Extract Extension
-            byte[] _extLength = new byte[PacketStructure.INT_LENGTH];
-            Buffer.BlockCopy( _packet , cursor , _extLength , 0 , PacketStructure.INT_LENGTH );
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse( _extLength );
-            int extLength = BitConverter.ToInt32( _extLength , 0 );
-            cursor += PacketStructure.INT_LENGTH;
-
-            byte[] _extension = new byte[extLength];
-            Buffer.BlockCopy( _packet , cursor , _extension , 0 , extLength );
-            cursor += extLength;
+            byte[] r_extension = GetVariableLengthBlock( _packet , cursor );
+            cursor += r_extension.Length;
 
             // Extract Client IP
-            byte[] _clientIPLength = new byte[PacketStructure.INT_LENGTH];
-            Buffer.BlockCopy( _packet , cursor , _clientIPLength , 0 , PacketStructure.INT_LENGTH );
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse( _clientIPLength );
-            int clientIPLength = BitConverter.ToInt32( _clientIPLength , 0 );
-            cursor += PacketStructure.INT_LENGTH;
+            byte[] r_clientIP = GetVariableLengthBlock( _packet , cursor );
+            cursor += r_clientIP.Length;
 
-            byte[] _clientIP = new byte[clientIPLength];
-            Buffer.BlockCopy( _packet , cursor , _clientIP , 0 , clientIPLength );
-            cursor += clientIPLength;
-
-            Console.WriteLine( "========= USER INFO AUTHENTICATION ==========" );
-            Console.WriteLine( "Callback Attribute: " + System.Text.Encoding.ASCII.GetString( callbackAttribute ) );
-            Console.WriteLine( "Account Number: " + accountNumber );
-            Console.WriteLine( "Authentication Key: " + System.Text.Encoding.ASCII.GetString( _authKey ) );
-            Console.WriteLine( "Extension: " + BitConverter.ToString( _extension ) );
-            Console.WriteLine( "Client IP: " + System.Text.Encoding.ASCII.GetString( _clientIP ) );
-
-            /*********************** BUILD RESPONSE */
-
-            // Response
-            // .-------------.----------------.--------------------.---------------.----------.---------.------------.------------.-----------.
-            // | Result Code | Condition Type | Callback Attribute | Provider Code |  User No | User ID | Account No | Account ID | Extension |
-            // |-------------+----------------+--------------------+---------------+----------+---------+------------+------------+-----------|
-            // | 10 11 12 13 |       14       | 15                 | ~             | ~        | ~       | ~          | ~          | ~         |
-            // |   Integer   |      Byte      | Int+Str            | Int+Str       | Int      | Str     | Int        | Str        | JSON      |
-            // '-------------'----------------'--------------------'---------------'----------'---------'------------'------------'-----------'
+            /********************** BUILD RESPONSE */
 
             // Build Echo Content
             byte[] echoContent = new byte[PacketStructure.ECHO_CONTENT_LENGTH];
@@ -193,11 +142,7 @@ namespace FCS_Server.refs
             byte conditionType = ConditionType.kCT_Running;
 
             // Callback Attribute
-            byte[] rCallbackAttribute = new byte[callbackAttributeLength + PacketStructure.INT_LENGTH];
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse( _callbackAttributeLength );
-            Buffer.BlockCopy( _callbackAttributeLength , 0 , rCallbackAttribute , 0 , PacketStructure.INT_LENGTH );
-            Buffer.BlockCopy( callbackAttribute , 0 , rCallbackAttribute , PacketStructure.INT_LENGTH , callbackAttribute.Length );
+            // // Callback attribute is the same as received package, r_callbackAttribute
 
             // Provider Code
             byte[] _providerCode = System.Text.Encoding.ASCII.GetBytes( ProviderCode.SCT001 );
@@ -208,10 +153,12 @@ namespace FCS_Server.refs
 
             // User Number
             int _userNumber = 1;
+
             byte[] userNumber = PacketProcess.IntToByte( _userNumber );
 
             // User ID
             String __userID = "dezner";
+
             byte[] _userID = System.Text.Encoding.ASCII.GetBytes( __userID ); // 6 bytes
             byte[] userIDLength = PacketProcess.IntToByte( _userID.Length ); // 6 - 00 00 00 06
             byte[] userID = new byte[PacketStructure.INT_LENGTH + _userID.Length]; //  4 + 6 = 10
@@ -220,10 +167,12 @@ namespace FCS_Server.refs
 
             // Account Number
             int __accountNumber = 1;
+
             byte[] _rAccountNumber = PacketProcess.IntToByte( __accountNumber );
 
             // Account ID
             String __accountID = "dezner";
+
             byte[] _accountID = System.Text.Encoding.ASCII.GetBytes( __accountID );
             byte[] accountIDLength = PacketProcess.IntToByte( _accountID.Length );
             byte[] accountID = new byte[PacketStructure.INT_LENGTH + _accountID.Length];
@@ -234,16 +183,16 @@ namespace FCS_Server.refs
             byte[] extension = new byte[] { 0x00 , 0x00 , 0x00 , 0x00 , 0x00 };
 
             // Total Packet Length
-            int packetLength = PacketStructure.HEADER_LENGTH + PacketStructure.ECHO_CONTENT_LENGTH + resultCode.Length + 1 + rCallbackAttribute.Length + providerCode.Length + userNumber.Length +
+            int packetLength = PacketStructure.HEADER_LENGTH + echoContent.Length + resultCode.Length + 1 + r_callbackAttribute.Length + providerCode.Length + userNumber.Length +
                 userID.Length + _rAccountNumber.Length + accountID.Length + extension.Length;
-            
+
             // Make Response Packet
             byte[] response = new byte[packetLength];
 
             // Build Header
             response[0] = PacketType.HEADER;
 
-            byte[] lengthBlock = PacketProcess.IntToByte( packetLength - 5 );
+            byte[] lengthBlock = PacketProcess.IntToByte( packetLength - PacketStructure.HEADER_LENGTH );
             Buffer.BlockCopy( lengthBlock , 0 , response , PacketStructure.HEADER_RESERVED_LENGTH , PacketStructure.INT_LENGTH );
 
             // Copy Echo Content
@@ -258,8 +207,8 @@ namespace FCS_Server.refs
             response[cursor] = conditionType;
             cursor += 1;
 
-            Buffer.BlockCopy( rCallbackAttribute , 0 , response , cursor , rCallbackAttribute.Length );
-            cursor += rCallbackAttribute.Length;
+            Buffer.BlockCopy( r_callbackAttribute , 0 , response , cursor , r_callbackAttribute.Length );
+            cursor += r_callbackAttribute.Length;
 
             Buffer.BlockCopy( providerCode , 0 , response , cursor , providerCode.Length );
             cursor += providerCode.Length;
@@ -275,16 +224,108 @@ namespace FCS_Server.refs
 
             Buffer.BlockCopy( accountID , 0 , response , cursor , accountID.Length );
             cursor += accountID.Length;
-            
+
             Buffer.BlockCopy( extension , 0 , response , cursor , extension.Length );
             cursor += extension.Length;
 
-            Console.WriteLine( "\n=============== RESPONSE ============" );
-            Console.WriteLine( BitConverter.ToString( response , 0 ) );
-
+            Console.WriteLine( BitConverter.ToString( response ) );
             return response;
         }
 
+        public static byte[] WShopCheckBalance(  byte[] _packet )
+        {
+            /*
+            * #===============================================================================================================
+            reserved                    = self.data[self.__pos]
+            self.__pos                  += sizeVar.reserved
+            #===============================================================================================================
+            packet_length               = self.data[self.__pos:self.__pos + sizeVar.packet_length]
+            self.__pos                  += sizeVar.packet_length
+            #===============================================================================================================
+            packet_type                 = self.data[self.__pos:self.__pos + sizeVar.packet_type]
+            self.__pos                  += sizeVar.packet_type
+            #===============================================================================================================
+            transaction_id              = self.data[self.__pos:self.__pos + sizeVar.transaction_id]
+            self.__pos                  += sizeVar.transaction_id
+            #===============================================================================================================
+            callback_attribute          = self.data[self.__pos:self.__pos + sizeVar.callback_attribute]
+            self.__pos                  += sizeVar.callback_attribute
+            callback_attribute_string   = self.data[self.__pos:self.__pos + callback_attribute[-1]]
+            self.__pos                  += callback_attribute[-1]
+            #===============================================================================================================
+            return_structure            = self.data[self.__pos:self.__pos + sizeVar.return_structure]
+            self.__pos                  += sizeVar.return_structure
+            #===============================================================================================================
+            provider_code               = self.data[self.__pos:self.__pos + sizeVar.provider_code]
+            self.__pos                  += sizeVar.provider_code
+            provider_code_string        = self.data[self.__pos:self.__pos + provider_code[-1]]
+            self.__pos                  += provider_code[-1]
+            #===============================================================================================================
+            user_no                     = self.data[self.__pos:self.__pos + sizeVar.user_no]
+            self.__pos                  += sizeVar.user_no
+            #===============================================================================================================
+            user_id                     = self.data[self.__pos:self.__pos + sizeVar.user_id]
+            self.__pos                  += sizeVar.user_id
+            user_id_string              = self.data[self.__pos:self.__pos + user_id[-1]]
+            self.__pos                  += user_id[-1]
+            #===============================================================================================================
+            account_no                  = self.data[self.__pos:self.__pos + sizeVar.account_no]
+            self.__pos                  += sizeVar.account_no
+            #===============================================================================================================
+            account_id                  = self.data[self.__pos:self.__pos + sizeVar.account_id]
+            self.__pos                  += sizeVar.account_id
+            account_id_string           = self.data[self.__pos:self.__pos + account_id[-1]]
+            self.__pos                  += account_id[-1]
+            #===============================================================================================================
+            world_key                   = self.data[self.__pos:self.__pos + sizeVar.world_key]
+            self.__pos                  += sizeVar.world_key
+            world_key_string            = self.data[self.__pos:self.__pos + world_key[-1]]
+            self.__pos                  += world_key[-1]
+            #===============================================================================================================
+            character_no                = self.data[self.__pos:self.__pos + sizeVar.character_no]
+            self.__pos                  += sizeVar.character_no
+            #===============================================================================================================
+            character_id                = self.data[self.__pos:self.__pos + sizeVar.character_id]
+            self.__pos                  += sizeVar.character_id
+            character_id_string         = self.data[self.__pos:self.__pos + character_id[-1]]
+            self.__pos                  += character_id[-1]
+            #===============================================================================================================
+            client_ip                   = self.data[self.__pos:self.__pos + sizeVar.client_ip]
+            self.__pos                  += sizeVar.client_ip
+            client_ip_string            = self.data[self.__pos:self.__pos + client_ip[-1]]
+            self.__pos                  += client_ip[-1]
+            #===============================================================================================================
+            send = (reserved, packet_length, packet_type, transaction_id, callback_attribute, callback_attribute_string, return_structure, provider_code, provider_code_string, user_no, user_id, user_id_string, account_no, account_id, account_id_string, world_key, world_key_string, character_no, character_id, character_id_string, client_ip, client_ip_string)
+            return send_wshop_billing.RequestWShopCheckBalance(send)
+            */
+
+            return new byte[5];
+        }
+
+        public static byte[] GetVariableLengthBlock( byte[] _packet, int offset )
+        {
+            int length = ByteToInt(  _packet , offset );
+
+            byte[] b = new byte[length];
+            Buffer.BlockCopy( _packet , offset + PacketStructure.INT_LENGTH , b , 0 , length );
+
+            byte[] r = new byte[length + PacketStructure.INT_LENGTH];
+            Buffer.BlockCopy( _packet , offset , r , 0 , PacketStructure.INT_LENGTH );
+            Buffer.BlockCopy( b , 0 , r , PacketStructure.INT_LENGTH , b.Length );
+
+            return r;
+        }
+
+        public static int ByteToInt( byte[] _packet , int offset )
+        {
+            byte[] b = new byte[PacketStructure.INT_LENGTH];
+            Buffer.BlockCopy(_packet, offset, b, 0, PacketStructure.INT_LENGTH );
+
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse( b );
+
+            return BitConverter.ToInt32( b , 0 );
+        }
         public static byte[] IntToByte( int number )
         {
             byte[] _n = BitConverter.GetBytes( number );
@@ -293,7 +334,7 @@ namespace FCS_Server.refs
             return _n;
         }
 
-        public static Byte[] BuildWorldNo( Byte[] _packet, int ServiceCodeLength )
+        public static byte[] BuildWorldNo( byte[] _packet, int ServiceCodeLength )
         {
             // Get World No Offset from Packet
             int worldNoOffset = PacketStructure.INITIALIZE_SERVICE_CODE_LENGTH_OFFSET + ServiceCodeLength;
@@ -305,7 +346,7 @@ namespace FCS_Server.refs
 
             return worldNo;
         }
-        public static Byte[] BuildServiceCode( Byte[] _packet )
+        public static byte[] BuildServiceCode( byte[] _packet )
         {
             // Get size of Service Code string
             byte[] svcCodLgth = new byte[4];
