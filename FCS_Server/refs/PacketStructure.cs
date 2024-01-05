@@ -29,6 +29,7 @@ namespace FCS_Server.refs
 
         public const short INT_LENGTH = 4;
         public const short BYTE_LENGTH = 1;
+        public const short LONG_LENGTH = 8;
 
         /*********************************************** HEADER */
         // Lenghts

@@ -26,7 +26,6 @@ namespace FCS_Server
          */
         public static void Start()
         {
-            // 255   00 00 00 O   '   00 00 00 0c   00 00 00 \n   2245591041   00 00 00 07   00 00 00 $   ---   00 00 00 00   ~   00 00 00 08   ~
             Console.WriteLine( "Testing Authentication packets..." );
             Byte[] testPacket = new byte[] { 
                 PacketType.HEADER ,
